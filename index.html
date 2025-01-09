@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Chat App</title>
+  <!-- Firebase v9+ Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+    
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCg7QdhjoaK6b4Q8JV8uxGiA07ICxA-YEs",
+     authDomain: "chat-app-e85a8.firebaseapp.com",
+     projectId: "chat-app-e85a8",
+     storageBucket: "chat-app-e85a8.firebasestorage.app",
+     messagingSenderId: "180259524450",
+     appId: "1:180259524450:web:d259f872912829bc1fe63b",
+     measurementId: "G-SD00B4L6GP"
+};
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Function to send message
+    window.sendMessage = async function() {
+      const message = document.getElementById('messageInput').value;
+
+      if (message.trim() !== '') {
+        try {
+          await addDoc(collection(db, "messages"), {
+            text: message,
+            timestamp: new Date()
+          });
+
+          document.getElementById('messageInput').value = ''; // Clear input
+        } catch (e) {
+          console.error("Error adding document: ", e);
+        }
+      }
+    };
+
+    // Function to load and display messages
+    window.loadMessages = function() {
+      const messagesDiv = document.getElementById('messages');
+
+      const q = query(collection(db, "messages"), orderBy("timestamp"));
+      onSnapshot(q, (snapshot) => {
+        messagesDiv.innerHTML = ''; // Clear current messages
+        snapshot.forEach((doc) => {
+          const message = doc.data().text;
+          const messageElement = document.createElement('div');
+          messageElement.textContent = message;
+          messagesDiv.appendChild(messageElement);
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight; // Auto scroll to bottom
+      });
+    };
+
+    // Load messages on page load
+    window.onload = loadMessages;
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #messages {
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 300px;
+      overflow-y: scroll;
+      margin-bottom: 10px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+    }
+    button {
+      padding: 10px 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Simple Chat App</h1>
+
+  <div id="messages"></div>
+
+  <input type="text" id="messageInput" placeholder="Type a message...">
+  <button onclick="sendMessage()">Send</button>
+
+</body>
+</html>
